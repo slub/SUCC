@@ -23,7 +23,6 @@ public class Action {
             case "copy": {}
             case "move": {}
             case "delete": {}
-            case "save": {}
             case "prefix": {}
             case "suffix": {}
             case "init": {}
@@ -50,7 +49,7 @@ public class Action {
         System.out.print(action);
         if (args.size() > 1) {
             System.out.print("(");
-            Iterator it = args.iterator();
+            Iterator<String> it = args.iterator();
             int i = 0;
             while (it.hasNext()) {
                 if (i > 0) {
@@ -67,7 +66,7 @@ public class Action {
             SrcDst src = new SrcDst("1", conv);
             SrcDst dst = new SrcDst("1", conv);
             MABRecord mabRecord = new MABRecord();
-            Integer toUse = 99999999;
+            Integer toUse = MABConstants.useAlways;
             add(src, dst, mabRecord, conv, toUse);
             set(src, dst, mabRecord, conv, toUse);
             delete(src, dst, mabRecord, conv, toUse);
@@ -301,6 +300,7 @@ public class Action {
         String splittedValue = "";
         if (!(splitValue.equals(""))) {
             if (args.get(1).equals("|") || args.get(1).equals("&") || args.get(1).equals("/") || args.get(1).equals(".")) {
+                //noinspection Annotator
                 splitValue = splitValue.replaceAll("\\" + args.get(1), "|");
                 splittedValue = splitValue.split("\\|",-2)[Integer.valueOf(args.get(0)) - 1];
             } else {

@@ -1,3 +1,10 @@
+//*************************************************************************************************
+//   SUCC - Saxony / Slub UniCode Converter
+//
+//   doing the download from SWB to LIBERO without the UCC (and it's licensing disadvantage)
+//
+//   by rt3 @ IT @ SLUB Dresden
+//*************************************************************************************************
 
 import CONV.Converter;
 import CONV.Eintrag;
@@ -14,51 +21,122 @@ import java.util.*;
 
 public class succ {
 
+    // structure for config.properties - entries
     private static Properties config = new Properties();
+
+    // class instance converter.ini - entries
+    // class: CONV.Converter
     private static Converter converterINI = new Converter();
+
+    // structure for time statistics (runtime) (in milli seconds)
     private static TimeMetrics timeMetrics = new TimeMetrics();
+
+    // class instance for command line parameters
+    // class: TOOLS.CmdParams
     private static CmdParams cmdParams = new CmdParams();
+
+    // structure (with class instance) for action time statistics (in nano seconds)
+    // class: TOOLS.ActionStats
     private static HashMap<String, ActionStats> actionStats = new HashMap<>();
+
+    // class intstance for debugging output
+    // class: TOOLS.Debug
     private static Debug debug = new Debug();
 
+    // default config file
+    private static String configFile = "conf/config.properties";
+
+    // counter for program steps
+    private static Integer step = 0;
+
+    // flag for start debugging (end after reading and initializing)
+    private static Boolean doStartOnly = Boolean.FALSE;
+
+
+    //***************************************
+    // main routine / entry point
+    //***************************************
     public static void main (String[] args) {
 
         System.out.println();
 
+        // starting time for whole program
         timeMetrics.startTimer("999_Programm");
 
-        timeMetrics.startTimer("000_readCommandLine");
-        cmdParams.fill(args);
-        timeMetrics.stopTimer("000_readCommandLine");
-
-        timeMetrics.startTimer("001_loadConfig");
-        String configFile = "conf/config.properties";
-        if (cmdParams.containsKey("propFile")) {
-            configFile = cmdParams.get("propFile");
+        // reading command line parameters
+        try {
+            String strStep = String.format("%03d", ++step);
+            timeMetrics.startTimer(strStep + "_readCommandLine");
+            cmdParams.fill(args);
+            timeMetrics.stopTimer(strStep + "_readCommandLine");
+            System.out.println(strStep + ": command line read ...");
+        } catch (Exception e) {
+            System.out.println("Error while reading command line parameters!");
+            e.printStackTrace();
         }
-        config = loadConfig(configFile);
-        timeMetrics.stopTimer("001_loadConfig");
 
-        overWriteConfig();
+        // loading config from conf/config.properties
+        try {
+            String strStep = String.format("%03d", ++step);
+            timeMetrics.startTimer(strStep + "_loadConfig");
+            if (cmdParams.containsKey("propFile")) {
+                configFile = cmdParams.get("propFile");
+            }
+            config = loadConfig(configFile);
+            timeMetrics.stopTimer(strStep + "_loadConfig");
+            System.out.println(strStep + ": config loaded from <" + configFile + ">: version " + config.getProperty("version","0.0") + " ...");
+        } catch (Exception e) {
+            System.out.println("Error while loading config!");
+            e.printStackTrace();
+        }
 
-        System.out.println("config loaded from <" + configFile + ">: version " + config.getProperty("version","0.0"));
-        System.out.println("reading converter file <" + config.getProperty("converter", "converter.ini") +"> ... ");
+        // overwriting config with command line parameters
+        try {
+            String strStep = String.format("%03d", ++step);
+            timeMetrics.startTimer(strStep + "_overwriteConfig");
+            overWriteConfig();
+            timeMetrics.stopTimer(strStep + "_overwriteConfig");
+            System.out.println(strStep + ": config overwritten (where needed) ...");
+        } catch (Exception e) {
+            System.out.println("Error while overwriting config!");
+            e.printStackTrace();
+        }
 
-        timeMetrics.startTimer("002_loadConverter");
-        readConverter(config.getProperty("converter", "converter.ini"));
-        timeMetrics.stopTimer("002_loadConverter");
+        // loading converter file into structure
+        try {
+            String strStep = String.format("%03d", ++step);
+            timeMetrics.startTimer(strStep + "_loadConverter");
+            readConverter(config.getProperty("converter", "converter.ini"));
+            timeMetrics.stopTimer(strStep + "_loadConverter");
+            System.out.println(strStep + ": converter file <" + config.getProperty("converter", "converter.ini") +"> read ... ");
+        } catch (Exception e) {
+            System.out.println("Error while reading converter entries!");
+            e.printStackTrace();
+        }
 
-        initVariables();
+        // initializing variables from config
+        try {
+            String strStep = String.format("%03d", ++step);
+            timeMetrics.startTimer(strStep + "_initVariables");
+            initVariables();
+            timeMetrics.stopTimer(strStep + "_initVariables");
+            System.out.println(strStep + ": variables from properties initialized ...");
+        } catch (Exception e) {
+            System.out.println("Error while initializing variables!");
+            e.printStackTrace();
+        }
 
         System.out.println();
 
-        if (1 == 0) {
+        // debug and stop if just start
+        if (doStartOnly) {
             cmdParams.dump();
             converterINI.dumpEntries();
             converterINI.dumpVariables();
             dumpProperties(config);
             System.exit(1);
         }
+
 
         switch (cmdParams.getOrDefault("function", "help")) {
             case "mabd2d": {
@@ -171,29 +249,82 @@ public class succ {
         timeMetrics.stopTimer("999_Programm");
         System.out.println("Laufzeit: " + (0.0 + timeMetrics.getTimer("999_Programm"))/1000 + "s");
     }
+    //***************************************
+    // end main routine
+    //***************************************
 
-    private static void dumpActionStats() {
-        System.out.println("Action statistics:");
-        Integer cntAll = 0;
-        Long sumNanos = 0L;
-        for (String action : actionStats.keySet()) {
-            Integer count = actionStats.get(action).getCount();
-            Long cntNanos = actionStats.get(action).getNanos();
-            Double avgNanos = actionStats.get(action).getAvg();
-            cntAll += count;
-            sumNanos += cntNanos;
-            String strCnt = String.format("%,3d",count);
-            String strNns = String.format("%,10.1f",Double.valueOf(cntNanos)/1000.0);
-            String strAvg = String.format("%,10.1f",avgNanos/1000.0);
-            System.out.println("Action: " + String.format("%8s", action) + " - count: " + strCnt + " - mys: " + strNns + "µs  - avg: " + strAvg + "µs");
+
+    //---------------------------------------------------------------------------------------------
+    // routines for startup
+    //---------------------------------------------------------------------------------------------
+
+    // loading config
+    private static Properties loadConfig(String conffile) {
+        Properties config = new Properties();
+        try {
+            try (InputStream inputStream = new FileInputStream(conffile)) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
+                    config.load(reader);
+                }
+            }
         }
-        System.out.println("-----------------------------------------------------------------------------------------------------------------------");
-        String strCnt = String.format("%,3d",cntAll);
-        String strNns = String.format("%,10.1f",Double.valueOf(sumNanos)/1000.0);
-        System.out.println("Sum:               count: " + strCnt + " - mys: " + strNns + "µs");
-        System.out.println();
+        catch (IOException e) {
+            System.out.println("FATAL ERROR: Die Datei '" + conffile + "' konnte nicht geöffnet werden!");
+            System.exit(98);
+        }
+        return config;
     }
 
+    // overwrite config
+    private static void overWriteConfig() {
+        if (cmdParams.containsKey("convFile")) {
+            config.setProperty("converter", cmdParams.get("convFile"));
+        }
+        if (cmdParams.containsKey("inFile") && (cmdParams.get("function").equals("mabt2d"))) {
+            config.setProperty("mabTinFile", cmdParams.get("inFile"));
+        }
+        if (cmdParams.containsKey("outFile") && (cmdParams.get("function").equals("mabt2d"))) {
+            config.setProperty("mabDoutFile", cmdParams.get("outFile"));
+        }
+        if (cmdParams.containsKey("outFile") && (cmdParams.get("function").equals("mabt2t"))) {
+            config.setProperty("mabToutFile", cmdParams.get("outFile"));
+        }
+        if (cmdParams.containsKey("inFile") && (cmdParams.get("function").equals("mabt2dlist"))) {
+            config.setProperty("mabInList", cmdParams.get("inFile"));
+        }
+        if (cmdParams.containsKey("mabTyp") && (cmdParams.get("function").equals("mabt2dlist"))) {
+            config.setProperty("defaultTyp", cmdParams.get("mabTyp"));
+        }
+        if (cmdParams.containsKey("outSuffix") && (cmdParams.get("function").equals("mabt2dlist"))) {
+            config.setProperty("listSuffix", cmdParams.get("outSuffix"));
+        }
+        if (cmdParams.containsKey("work")) {
+            config.setProperty("work", cmdParams.get("work"));
+        }
+    }
+
+    // reading converter entries
+    private static void readConverter(String converterFileName) {
+        BufferedReader bufferedReader;
+        try {
+            bufferedReader = new BufferedReader(new FileReader(converterFileName));
+            String listLine = bufferedReader.readLine();
+            Integer convLine = 1;
+            while (listLine != null) {
+                convLine += converterINI.setEntry(convLine, listLine);
+                listLine = bufferedReader.readLine();
+            }
+        } catch (FileNotFoundException e) {
+            debug.println("Sorry! File <" + converterFileName + "> not found!");
+            System.exit(91);
+        } catch (Exception e) {
+            debug.println("Sorry! Unknown Error while reading file <" + converterFileName + ">!");
+            e.printStackTrace();
+            System.exit(91);
+        }
+    }
+
+    // initializing variables
     private static void initVariables() {
         config.forEach((key, value) -> {
             if (key.toString().startsWith("V")) {
@@ -206,6 +337,11 @@ public class succ {
 
     }
 
+
+
+    //---------------------------------------------------------------------------------------------
+    // routines for processing
+    //---------------------------------------------------------------------------------------------
     private static void processMABtFile(MABFile mabFile, String mabTinFile, String mabOutFile, Integer fileCount, String mabTypIn, String mabTypOut, Boolean seq) {
         if (config.getProperty("work","bulk").equals("bulk")) {
             // file on bulk
@@ -377,57 +513,6 @@ public class succ {
         }
     }
 
-    private static void dumpProperties(Properties config) {
-        config.forEach((key, value) -> System.out.println("#" + key + ": " + value + "#"));
-    }
-
-    private static void overWriteConfig() {
-        if (cmdParams.containsKey("convFile")) {
-            config.setProperty("converter", cmdParams.get("convFile"));
-        }
-        if (cmdParams.containsKey("inFile") && (cmdParams.get("function").equals("mabt2d"))) {
-            config.setProperty("mabTinFile", cmdParams.get("inFile"));
-        }
-        if (cmdParams.containsKey("outFile") && (cmdParams.get("function").equals("mabt2d"))) {
-            config.setProperty("mabDoutFile", cmdParams.get("outFile"));
-        }
-        if (cmdParams.containsKey("outFile") && (cmdParams.get("function").equals("mabt2t"))) {
-            config.setProperty("mabToutFile", cmdParams.get("outFile"));
-        }
-        if (cmdParams.containsKey("inFile") && (cmdParams.get("function").equals("mabt2dlist"))) {
-            config.setProperty("mabInList", cmdParams.get("inFile"));
-        }
-        if (cmdParams.containsKey("mabTyp") && (cmdParams.get("function").equals("mabt2dlist"))) {
-            config.setProperty("defaultTyp", cmdParams.get("mabTyp"));
-        }
-        if (cmdParams.containsKey("outSuffix") && (cmdParams.get("function").equals("mabt2dlist"))) {
-            config.setProperty("listSuffix", cmdParams.get("outSuffix"));
-        }
-        if (cmdParams.containsKey("work")) {
-            config.setProperty("work", cmdParams.get("work"));
-        }
-    }
-
-    private static void readConverter(String converterFileName) {
-        BufferedReader bufferedReader;
-        try {
-            bufferedReader = new BufferedReader(new FileReader(converterFileName));
-            String listLine = bufferedReader.readLine();
-            Integer convLine = 1;
-            while (listLine != null) {
-                convLine += converterINI.setEntry(convLine, listLine);
-                listLine = bufferedReader.readLine();
-            }
-        } catch (FileNotFoundException e) {
-            debug.println("Sorry! File <" + converterFileName + "> not found!");
-            System.exit(91);
-        } catch (Exception e) {
-            debug.println("Sorry! Unknown Error while reading file <" + converterFileName + ">!");
-            e.printStackTrace();
-            System.exit(91);
-        }
-    }
-
     private static void transformMABFile(MABFile mabFile) {
         for (MABRecord aktMAB : mabFile.getRecords()) {
             transformMABRecord(aktMAB, mabFile);
@@ -448,6 +533,8 @@ public class succ {
         }
     }
 
+
+    // starting action based on converter entry
     private static void doAction(Eintrag eintrag, MABRecord aktMAB, HashMap<String, ActionStats> actionStats, Integer toUse) {
         // System.out.println("##############################################################");
         // System.out.print(eintrag.getAction().getAction() + "|");
@@ -463,10 +550,7 @@ public class succ {
         // System.out.println("---");
     }
 
-    private void debugging(String msg) {
-        System.out.println("class: " + this.getClass().getSimpleName());
-    }
-
+    // checking if converter entry applies to MAB record
     private static Integer checkCondition(Eintrag eintrag, MABRecord aktMAB, MABFile mabFile) {
         String useOn = eintrag.getUseOn();
         String condVar = eintrag.getBedingung().getVariable();
@@ -525,20 +609,37 @@ public class succ {
         return entryNumber;
     }
 
-    private static Properties loadConfig(String conffile) {
-        Properties config = new Properties();
-        try {
-            try (InputStream inputStream = new FileInputStream(conffile)) {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
-                    config.load(reader);
-                }
-            }
+
+    //---------------------------------------------------------------------------------------------
+    // helper routines (dumping etc.)
+    //---------------------------------------------------------------------------------------------
+
+    // dumping action statistics
+    private static void dumpActionStats() {
+        System.out.println("Action statistics:");
+        Integer cntAll = 0;
+        Long sumNanos = 0L;
+        for (String action : actionStats.keySet()) {
+            Integer count = actionStats.get(action).getCount();
+            Long cntNanos = actionStats.get(action).getNanos();
+            Double avgNanos = actionStats.get(action).getAvg();
+            cntAll += count;
+            sumNanos += cntNanos;
+            String strCnt = String.format("%,3d",count);
+            String strNns = String.format("%,10.1f",Double.valueOf(cntNanos)/1000.0);
+            String strAvg = String.format("%,10.1f",avgNanos/1000.0);
+            System.out.println("Action: " + String.format("%8s", action) + " - count: " + strCnt + " - mys: " + strNns + "µs  - avg: " + strAvg + "µs");
         }
-        catch (IOException e) {
-            System.out.println("FATAL ERROR: Die Datei '" + conffile + "' konnte nicht geöffnet werden!");
-            System.exit(98);
-        }
-        return config;
+        System.out.println("-----------------------------------------------------------------------------------------------------------------------");
+        String strCnt = String.format("%,3d",cntAll);
+        String strNns = String.format("%,10.1f",Double.valueOf(sumNanos)/1000.0);
+        System.out.println("Sum:               count: " + strCnt + " - mys: " + strNns + "µs");
+        System.out.println();
+    }
+
+    // dumping loaded properties
+    private static void dumpProperties(Properties config) {
+        config.forEach((key, value) -> System.out.println("#" + key + ": " + value + "#"));
     }
 
 }

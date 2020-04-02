@@ -1,7 +1,6 @@
 package TOOLS;
 
 import java.util.HashMap;
-import java.util.function.BiConsumer;
 
 public class CmdParams {
     private HashMap<String, String> cmdParams = new HashMap<>();
@@ -41,10 +40,5 @@ public class CmdParams {
     public void dump() {
         cmdParams.forEach((key, value) -> System.out.println("|" + key + ": " + value + "|"));
     }
-
-    /*    public void forEach(BiConsumer<? super String, ? super String> T) {
-        cmdParams.forEach(T);
-    }
-*/
 
 }
