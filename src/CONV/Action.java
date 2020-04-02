@@ -23,7 +23,6 @@ public class Action {
             case "copy": {}
             case "move": {}
             case "delete": {}
-            case "save": {}
             case "prefix": {}
             case "suffix": {}
             case "init": {}
