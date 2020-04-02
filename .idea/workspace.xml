@@ -6,7 +6,9 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6b5e08b1-4eab-4202-9992-79f0b448d1e7" name="Default Changelist" comment="" />
+    <list default="true" id="6b5e08b1-4eab-4202-9992-79f0b448d1e7" name="Default Changelist" comment="initial IJ commit">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,6 +42,15 @@
       <dir>S:\workspaces\eclipse\succ\src</dir>
     </dirStrings>
   </component>
+  <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Ralf Talkenberger &lt;ralf.talkenberger@slub-dresden.de&gt;" />
+        <option value="rt3" />
+      </list>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectId" id="1ZX0SOVRkrDi137tR0FwkAJKIKq" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -49,7 +60,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.last.edited" value="Global Libraries" />
     <property name="project.structure.proportion" value="0.15625" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
@@ -179,11 +190,24 @@
       <option name="presentableId" value="Default" />
       <updated>1569497686266</updated>
     </task>
+    <task id="LOCAL-00001" summary="initial IJ commit">
+      <created>1585804802324</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1585804802324</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.t" />
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.ini" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="false" />
+    <MESSAGE value="initial IJ commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="initial IJ commit" />
   </component>
   <component name="WindowStateProjectService">
     <state x="1918" y="-200" key="#Project_Structure" timestamp="1584970171867">
@@ -194,10 +218,14 @@
       <screen x="1366" y="-438" width="1920" height="1160" />
     </state>
     <state x="1780" y="-203" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1366.728/1366.-438.1920.1160@1366.-438.1920.1160" timestamp="1585229322027" />
-    <state x="2106" y="-103" key="FileChooserDialogImpl" timestamp="1585744665833">
+    <state x="1992" y="-260" width="913" height="803" key="CommitChangelistDialog2" timestamp="1585804914324">
       <screen x="1366" y="-438" width="1920" height="1160" />
     </state>
-    <state x="2106" y="-103" key="FileChooserDialogImpl/0.0.1366.728/1366.-438.1920.1160@1366.-438.1920.1160" timestamp="1585744665833" />
+    <state x="1992" y="-260" width="913" height="803" key="CommitChangelistDialog2/0.0.1366.728/1366.-438.1920.1160@1366.-438.1920.1160" timestamp="1585804914324" />
+    <state x="2106" y="-103" key="FileChooserDialogImpl" timestamp="1585804945369">
+      <screen x="1366" y="-438" width="1920" height="1160" />
+    </state>
+    <state x="2106" y="-103" key="FileChooserDialogImpl/0.0.1366.728/1366.-438.1920.1160@1366.-438.1920.1160" timestamp="1585804945369" />
     <state width="1877" height="295" key="GridCell.Tab.0.bottom" timestamp="1585744950171">
       <screen x="1366" y="-438" width="1920" height="1160" />
     </state>
@@ -214,10 +242,14 @@
       <screen x="1366" y="-438" width="1920" height="1160" />
     </state>
     <state width="1877" height="295" key="GridCell.Tab.0.right/0.0.1366.728/1366.-438.1920.1160@1366.-438.1920.1160" timestamp="1585744950171" />
-    <state x="1646" y="-330" key="SettingsEditor" timestamp="1585744401837">
+    <state x="1646" y="-330" key="SettingsEditor" timestamp="1585805060484">
       <screen x="1366" y="-438" width="1920" height="1160" />
     </state>
-    <state x="1646" y="-330" key="SettingsEditor/0.0.1366.728/1366.-438.1920.1160@1366.-438.1920.1160" timestamp="1585744401837" />
+    <state x="1646" y="-330" key="SettingsEditor/0.0.1366.728/1366.-438.1920.1160@1366.-438.1920.1160" timestamp="1585805060484" />
+    <state x="2137" y="61" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1585804720779">
+      <screen x="1366" y="-438" width="1920" height="1160" />
+    </state>
+    <state x="2137" y="61" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1366.728/1366.-438.1920.1160@1366.-438.1920.1160" timestamp="1585804720779" />
     <state x="1989" y="-183" width="672" height="678" key="search.everywhere.popup" timestamp="1585718173308">
       <screen x="1366" y="-438" width="1920" height="1160" />
     </state>
