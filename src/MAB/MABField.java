@@ -1,5 +1,12 @@
 package MAB;
 
+/*
+ * @project SUCC
+ * @author  Ralf Talkenberger
+ * @version 0.9
+ * @created 2020-04-07
+ */
+
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 

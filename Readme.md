@@ -19,11 +19,11 @@ Therefore the development of an open source product with similar functions (espe
 
     - parameter
         - -function = [ mabt2t | mabt2d | mabd2t | mabd2d ] ... _file formats (mab`<in>`2`<out>`)_
-        - -work = [ seq | bulk ] ... _working with data (sequential / bulk)_
-        - -convFile = <converter.ini> ... _conversation rules
+        - -work = [ seq | bulk ] ... _working with data (sequential or bulk)_
+        - -convFile = <converter.ini> ... _conversation rules (see in ~/conf/)_
         - -inFile = <infile> ... _input file_
         - -outFile = <outfile> ... _output file_
-        - -propFile = <config.properties> ... _configuration file_
+        - -propFile = <config.properties> ... _configuration file (see in ~/conf/)_
         - -listFile = <listfile> ... _list of files to apply the rules to_
   
    

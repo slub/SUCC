@@ -1,5 +1,12 @@
 package TOOLS;
 
+/*
+ * @project SUCC
+ * @author  Ralf Talkenberger
+ * @version 0.9
+ * @created 2020-04-07
+ */
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

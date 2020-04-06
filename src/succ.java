@@ -6,6 +6,13 @@
 //   by rt3 @ IT @ SLUB Dresden
 //*************************************************************************************************
 
+/*
+ * @project SUCC
+ * @author  Ralf Talkenberger
+ * @version 0.9
+ * @created 2020-04-07
+*/
+
 import CONV.Converter;
 import CONV.Eintrag;
 import CONV.Operator;
