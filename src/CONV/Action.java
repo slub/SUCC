@@ -36,6 +36,9 @@ public class Action {
             case "init": {}
             case "format": {}
             case "export": {}
+            case "extract": {
+                // 2 Parameter Pflicht
+            }
             case "piece": {
                 // 2 Parameter Pflicht
             }
@@ -132,6 +135,90 @@ public class Action {
         return System.nanoTime() - startNano;
     }
 
+    public Long delete(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
+        Long startNano = System.nanoTime();
+        if (src.getTyp().equals(SrcDst.IS_MABFIELD)) {
+            if (toUse.equals(MABConstants.useAlways)) {
+                mabRecord.deleteMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator());
+            } else {
+                mabRecord.deleteMABField(toUse);
+            }
+        }
+        return System.nanoTime() - startNano;
+    }
+
+    public Long copy(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
+        Long startNano = System.nanoTime();
+
+        // if MABfield(toUse) != MABmabfield(src) => toUse = MABConstants.useAlways
+        if (src.getTyp().equals(SrcDst.IS_MABFIELD)) {
+            if (!(toUse.equals(MABConstants.useAlways))) {
+                if (!((src.getMabField().getMabTag() + src.getMabField().getMabIndicator()).equals(mabRecord.getMABTI(toUse)))) {
+                    toUse = MABConstants.useAlways;
+                }
+            }
+        }
+        //
+
+
+        if (src.getTyp().equals(SrcDst.IS_MABFIELD) && dst.getTyp().equals((SrcDst.IS_MABFIELD))) {
+            if (mabRecord.hasSubFields(src.getMabField().getMabTag(), src.getMabField().getMabIndicator())) {
+                if (src.getMabField().getSubTag().equals(" ")) {
+                    if (toUse.equals(MABConstants.useAlways)) {
+                        mabRecord.copyMABFieldWithSubFields(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
+                    } else {
+                        mabRecord.copyMABFieldWithSubFields(toUse, dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
+                    }
+                } else {
+                    // copy subfield only
+                    if (toUse.equals(MABConstants.useAlways)) {
+                        mabRecord.copySubFieldOnly(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), src.getMabField().getSubTag(), dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
+                    } else {
+                        mabRecord.copySubFieldOnly(toUse, dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator(), dst.getMabField().getSubTag());
+                    }
+                }
+            } else {
+                if (toUse.equals(MABConstants.useAlways)) {
+                    mabRecord.copyMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
+                } else {
+                    mabRecord.copyMABField(toUse, dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
+                }
+            }
+        }
+        if (src.getTyp().equals(SrcDst.IS_MABFIELD) && dst.getTyp().equals((SrcDst.IS_VARIABLE))) {
+            if (src.getMabField().getSubTag().equals(" ")) {
+                conv.setSpeicher(dst.getVariable(), mabRecord.getMabFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator()));
+            } else {
+                conv.setSpeicher(dst.getVariable(), mabRecord.getSubFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), src.getMabField().getSubTag()));
+            }
+        }
+        return System.nanoTime() - startNano;
+    }
+
+    public Long move(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
+        Long startNano = System.nanoTime();
+        if (src.getTyp().equals(SrcDst.IS_MABFIELD) && dst.getTyp().equals((SrcDst.IS_MABFIELD))) {
+            mabRecord.moveMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
+        }
+        return System.nanoTime() - startNano;
+    }
+
+    public Long export(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
+        Long startNano = System.nanoTime();
+        switch (src.getTyp()) {
+            case SrcDst.IS_VARIABLE: {
+                mabRecord.setExport(src.getVariable());
+                break;
+            }
+            case SrcDst.IS_VALUE: {
+                mabRecord.setExport(src.getValue());
+                break;
+            }
+        }
+        return System.nanoTime() - startNano;
+    }
+
+    // uses settingMabField
     public Long set(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
         Long startNano = System.nanoTime();
         int possibility = 0;
@@ -213,36 +300,7 @@ public class Action {
 
         switch (possibility) {
             case 1: {
-                if (src.getMabField().getSubTag().equals(" ")) {
-                    if (mabRecord.exists(src.getMabField().getMabTag(), src.getMabField().getMabIndicator())) {
-                        if (toUse.equals(MABConstants.useAlways)) {
-                            mabRecord.replaceMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), newValue);
-                        } else {
-                            mabRecord.replaceMABField(toUse, newValue);
-                        }
-                    } else {
-                        mabRecord.addMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), newValue);
-                    }
-                } else {
-                    // SubTag
-                    if (mabRecord.hasSubField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), src.getMabField().getSubTag())) {
-                        if (toUse.equals(MABConstants.useAlways)) {
-                            //System.out.println("src.toUse(rep_mab): " + toUse);
-                            mabRecord.replaceSUBField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), src.getMabField().getSubTag(), newValue);
-                        } else {
-                            //System.out.println("src.toUse(rep_mab): " + toUse);
-                            mabRecord.replaceSUBField(toUse, src.getMabField().getSubTag(), newValue);
-                        }
-                    } else {
-                        if (toUse.equals(MABConstants.useAlways)) {
-                            //System.out.println("src.toUse(sub_mab): " + toUse);
-                            mabRecord.setSUBField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), src.getMabField().getSubTag(), newValue);
-                        } else {
-                            //System.out.println("src.toUse(sub_set): " + toUse);
-                            mabRecord.setSUBField(toUse, src.getMabField().getSubTag(), newValue);
-                        }
-                    }
-                }
+                settingMabField(src, mabRecord, newValue, toUse);
                 break;
             }
             case 2: {
@@ -253,74 +311,7 @@ public class Action {
         return System.nanoTime() - startNano;
     }
 
-    public Long delete(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
-        Long startNano = System.nanoTime();
-        if (src.getTyp().equals(SrcDst.IS_MABFIELD)) {
-            if (toUse.equals(MABConstants.useAlways)) {
-                mabRecord.deleteMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator());
-            } else {
-                mabRecord.deleteMABField(toUse);
-            }
-        }
-        return System.nanoTime() - startNano;
-    }
-
-    public Long copy(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
-        Long startNano = System.nanoTime();
-
-        // if MABfield(toUse) != MABmabfield(src) => toUse = MABConstants.useAlways
-        if (src.getTyp().equals(SrcDst.IS_MABFIELD)) {
-            if (!(toUse.equals(MABConstants.useAlways))) {
-                if (!((src.getMabField().getMabTag() + src.getMabField().getMabIndicator()).equals(mabRecord.getMABTI(toUse)))) {
-                    toUse = MABConstants.useAlways;
-                }
-            }
-        }
-        //
-
-
-        if (src.getTyp().equals(SrcDst.IS_MABFIELD) && dst.getTyp().equals((SrcDst.IS_MABFIELD))) {
-            if (mabRecord.hasSubFields(src.getMabField().getMabTag(), src.getMabField().getMabIndicator())) {
-                if (src.getMabField().getSubTag().equals(" ")) {
-                    if (toUse.equals(MABConstants.useAlways)) {
-                        mabRecord.copyMABFieldWithSubFields(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
-                    } else {
-                        mabRecord.copyMABFieldWithSubFields(toUse, dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
-                    }
-                } else {
-                    // copy subfield only
-                    if (toUse.equals(MABConstants.useAlways)) {
-                        mabRecord.copySubFieldOnly(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), src.getMabField().getSubTag(), dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
-                    } else {
-                        mabRecord.copySubFieldOnly(toUse, dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator(), dst.getMabField().getSubTag());
-                    }
-                }
-            } else {
-                if (toUse.equals(MABConstants.useAlways)) {
-                    mabRecord.copyMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
-                } else {
-                    mabRecord.copyMABField(toUse, dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
-                }
-            }
-        }
-        if (src.getTyp().equals(SrcDst.IS_MABFIELD) && dst.getTyp().equals((SrcDst.IS_VARIABLE))) {
-            if (src.getMabField().getSubTag().equals(" ")) {
-                conv.setSpeicher(dst.getVariable(), mabRecord.getMabFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator()));
-            } else {
-                conv.setSpeicher(dst.getVariable(), mabRecord.getSubFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), src.getMabField().getSubTag()));
-            }
-        }
-        return System.nanoTime() - startNano;
-    }
-
-    public Long move(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
-        Long startNano = System.nanoTime();
-        if (src.getTyp().equals(SrcDst.IS_MABFIELD) && dst.getTyp().equals((SrcDst.IS_MABFIELD))) {
-            mabRecord.moveMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator());
-        }
-        return System.nanoTime() - startNano;
-    }
-
+    // uses settingMabField
     public Long piece(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
         Long startNano = System.nanoTime();
         String splitValue;
@@ -339,7 +330,19 @@ public class Action {
                 splittedValue = splitValue.split(args.get(1),-2)[Integer.valueOf(args.get(0)) - 1];
             }
         }
+        switch (dst.getTyp()) {
+            case SrcDst.IS_MABFIELD: {
+                settingMabField(dst, mabRecord, splittedValue, MABConstants.useAlways);
+                break;
+            }
+            case SrcDst.IS_VARIABLE: {
+                conv.setSpeicher(dst.getVariable(), splittedValue);
+                break;
+            }
+        }
+/*
         if (dst.getTyp().equals(SrcDst.IS_MABFIELD)) {
+            settingMabField(dst, mabRecord, splittedValue, MABConstants.useAlways);
             if (mabRecord.exists(dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator())) {
                 mabRecord.replaceMABField(dst.getMabField().getMabTag(), dst.getMabField().getMabIndicator(), splittedValue);
             } else {
@@ -348,9 +351,13 @@ public class Action {
         } else {
             conv.setSpeicher(dst.getVariable(), splittedValue);
         }
+*/
+
+
         return System.nanoTime() - startNano;
     }
 
+    // uses settingMabField
     public Long suffix(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
         Long startNano = System.nanoTime();
         String suffixString;
@@ -359,6 +366,19 @@ public class Action {
         } else {
             suffixString = conv.getSpeicher(dst.getVariable());
         }
+
+        switch (src.getTyp()) {
+            case SrcDst.IS_MABFIELD: {
+                settingMabField(src, mabRecord, mabRecord.getMabFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator()) + suffixString, MABConstants.useAlways);
+                break;
+            }
+            case SrcDst.IS_VARIABLE: {
+                conv.setSpeicher(src.getVariable(), conv.getSpeicher(src.getVariable()) + suffixString);
+                break;
+            }
+        }
+
+        /*
         if (src.getTyp().equals(SrcDst.IS_VARIABLE)) {
             conv.setSpeicher(src.getVariable(), conv.getSpeicher(src.getVariable()) + suffixString);
         } else {
@@ -368,9 +388,12 @@ public class Action {
                 mabRecord.addMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), mabRecord.getMabFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator()) + suffixString);
             }
         }
+*/
+
         return System.nanoTime() - startNano;
     }
 
+    // uses settingMabField
     public Long prefix(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
         Long startNano = System.nanoTime();
         String suffixString;
@@ -379,6 +402,19 @@ public class Action {
         } else {
             suffixString = conv.getSpeicher(dst.getVariable());
         }
+
+        switch (src.getTyp()) {
+            case SrcDst.IS_MABFIELD: {
+                settingMabField(src, mabRecord, suffixString + mabRecord.getMabFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator()), MABConstants.useAlways);
+                break;
+            }
+            case SrcDst.IS_VARIABLE: {
+                conv.setSpeicher(src.getVariable(), suffixString + conv.getSpeicher(src.getVariable()));
+                break;
+            }
+        }
+
+/*
         if (src.getTyp().equals(SrcDst.IS_VARIABLE)) {
             conv.setSpeicher(src.getVariable(), suffixString + conv.getSpeicher(src.getVariable()));
         } else {
@@ -388,9 +424,12 @@ public class Action {
                 mabRecord.addMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), suffixString + mabRecord.getMabFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator()));
             }
         }
+*/
+
         return System.nanoTime() - startNano;
     }
 
+    // uses settingMabField
     public Long assign(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
         Long startNano = System.nanoTime();
         String entryString = "_";
@@ -417,6 +456,18 @@ public class Action {
         if (entryString.equals("n/a")) {
 
         } else {
+            switch (src.getTyp()) {
+                case SrcDst.IS_MABFIELD: {
+                    settingMabField(src, mabRecord, entryString, MABConstants.useAlways);
+                    break;
+                }
+                case SrcDst.IS_VARIABLE: {
+                    conv.setSpeicher(src.getVariable(), entryString);
+                    break;
+                }
+            }
+
+/*
             if (src.getTyp().equals(SrcDst.IS_VARIABLE)) {
                 conv.setSpeicher(src.getVariable(), entryString);
             } else {
@@ -426,10 +477,13 @@ public class Action {
                     mabRecord.addMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), entryString);
                 }
             }
+*/
+
         }
         return System.nanoTime() - startNano;
     }
 
+    // uses settingMabField
     public Long format(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
         Long startNano = System.nanoTime();
         String entryString = "";
@@ -467,6 +521,19 @@ public class Action {
                 ergString = String.format("%" + entryString, varString);
             }
         }
+        switch (src.getTyp()) {
+            case SrcDst.IS_MABFIELD: {
+                settingMabField(src, mabRecord, ergString, MABConstants.useAlways);
+                break;
+            }
+            case SrcDst.IS_VARIABLE: {
+                conv.setSpeicher(src.getVariable(), ergString);
+                break;
+            }
+        }
+
+
+/*
         if (src.getTyp().equals(SrcDst.IS_MABFIELD)) {
             if (mabRecord.exists(src.getMabField().getMabTag(), src.getMabField().getMabIndicator())) {
                 mabRecord.replaceMABField(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), ergString);
@@ -477,22 +544,109 @@ public class Action {
         if (src.getTyp().equals(SrcDst.IS_VARIABLE)) {
             conv.setSpeicher(src.getVariable(), ergString);
         }
+*/
+
+
         return System.nanoTime() - startNano;
     }
 
-    public Long export(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
+    // uses settingMabField
+    public Long extract(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
         Long startNano = System.nanoTime();
+
+        // getting source value
+        String srcValue = "";
         switch (src.getTyp()) {
-            case SrcDst.IS_VARIABLE: {
-                mabRecord.setExport(src.getVariable());
+            case SrcDst.IS_MABFIELD: {
+                if (!(src.getMabField().getSubTag().equals(" "))) {
+                    srcValue = mabRecord.getSubFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator(), src.getMabField().getSubTag());
+                } else {
+                    srcValue = mabRecord.getMabFieldValue(src.getMabField().getMabTag(), src.getMabField().getMabIndicator());
+                }
                 break;
             }
-            case SrcDst.IS_VALUE: {
-                mabRecord.setExport(src.getValue());
+            case SrcDst.IS_VARIABLE: {
+                srcValue = src.getVariable();
                 break;
             }
         }
+        Integer lenSrc = srcValue.length();
+
+        // doing extract according to args
+        Integer startSub = 0;
+        if (args.get(0).matches("\\d+")) {
+            startSub = Integer.valueOf(args.get(0));
+        } else {
+            if (args.get(0).equals("*")) {
+                startSub = lenSrc;
+            } else {
+                if (args.get(0).matches("\\*-\\d+")) {
+                    startSub = lenSrc - Integer.valueOf(args.get(0).substring(2));
+                }
+            }
+        }
+        Integer endeSub = lenSrc;
+        if (args.get(1).matches("\\d+")) {
+            endeSub = Integer.valueOf(args.get(1));
+        } else {
+            if (args.get(1).equals("*")) {
+                endeSub = lenSrc;
+            } else {
+                if (args.get(1).matches("\\*-\\d+")) {
+                    endeSub = lenSrc - Integer.valueOf(args.get(1).substring(2));
+                }
+            }
+        }
+        String dstValue = srcValue.substring(startSub,endeSub);
+
+        // writing to destination
+        switch (dst.getTyp()) {
+            case SrcDst.IS_MABFIELD: {
+                settingMabField(dst, mabRecord, dstValue, MABConstants.useAlways);
+                break;
+            }
+            case SrcDst.IS_VARIABLE: {
+                conv.setSpeicher(dst.getVariable(), dstValue);
+                break;
+            }
+        }
+
         return System.nanoTime() - startNano;
+    }
+
+
+
+    private void settingMabField(SrcDst destination, MABRecord mabRecord, String newValue, Integer toUse) {
+        if (destination.getMabField().getSubTag().equals(" ")) {
+            if (mabRecord.exists(destination.getMabField().getMabTag(), destination.getMabField().getMabIndicator())) {
+                if (toUse.equals(MABConstants.useAlways)) {
+                    mabRecord.replaceMABField(destination.getMabField().getMabTag(), destination.getMabField().getMabIndicator(), newValue);
+                } else {
+                    mabRecord.replaceMABField(toUse, newValue);
+                }
+            } else {
+                mabRecord.addMABField(destination.getMabField().getMabTag(), destination.getMabField().getMabIndicator(), newValue);
+            }
+        } else {
+            // SubTag
+            if (mabRecord.hasSubField(destination.getMabField().getMabTag(), destination.getMabField().getMabIndicator(), destination.getMabField().getSubTag())) {
+                if (toUse.equals(MABConstants.useAlways)) {
+                    //System.out.println("src.toUse(rep_mab): " + toUse);
+                    mabRecord.replaceSUBField(destination.getMabField().getMabTag(), destination.getMabField().getMabIndicator(), destination.getMabField().getSubTag(), newValue);
+                } else {
+                    //System.out.println("src.toUse(rep_mab): " + toUse);
+                    mabRecord.replaceSUBField(toUse, destination.getMabField().getSubTag(), newValue);
+                }
+            } else {
+                if (toUse.equals(MABConstants.useAlways)) {
+                    //System.out.println("src.toUse(sub_mab): " + toUse);
+                    mabRecord.setSUBField(destination.getMabField().getMabTag(), destination.getMabField().getMabIndicator(), destination.getMabField().getSubTag(), newValue);
+                } else {
+                    //System.out.println("src.toUse(sub_set): " + toUse);
+                    mabRecord.setSUBField(toUse, destination.getMabField().getSubTag(), newValue);
+                }
+            }
+        }
     }
 
     public String getAction() {return action;}

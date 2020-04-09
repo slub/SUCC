@@ -307,6 +307,12 @@ public class MABRecord {
         return "";
     }
 
+    public String getMabFieldValue(String mab) {
+        String mabTag = mab.substring(0,3);
+        String mabInd = mab.substring(3,4);
+        return getMabFieldValue(mabTag, mabInd);
+    }
+
     public String getSubFieldValue(String mabTag, String mabInd, String subTag) {
         MABField testField = new MABField(mabTag, mabInd);
         for (int i=0; i<mabFields.size(); i++) {
@@ -320,6 +326,13 @@ public class MABRecord {
             }
         }
         return "";
+    }
+
+    public String getSubFieldValue(String mab) {
+        String mabTag = mab.substring(0,3);
+        String mabInd = mab.substring(3,4);
+        String subTag = mab.substring(4);
+        return getSubFieldValue(mabTag, mabInd, subTag);
     }
 
     public String getMabFieldValue(Integer mabEntry) {
