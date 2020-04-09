@@ -10,6 +10,7 @@ package CONV;
 import MAB.MABConstants;
 import MAB.MABRecord;
 import TOOLS.ActionStats;
+import TOOLS.Debug;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -135,6 +136,18 @@ public class Action {
         Long startNano = System.nanoTime();
         int possibility = 0;
         String newValue = "";
+
+        // if MABfield(toUse) != MABmabfield(src) => toUse = MABConstants.useAlways
+        if (src.getTyp().equals(SrcDst.IS_MABFIELD)) {
+            if (!(toUse.equals(MABConstants.useAlways))) {
+                if (!((src.getMabField().getMabTag() + src.getMabField().getMabIndicator()).equals(mabRecord.getMABTI(toUse)))) {
+                    toUse = MABConstants.useAlways;
+                }
+            }
+        }
+        //
+
+
         switch (src.getTyp()) {
             case SrcDst.IS_MABFIELD: {
                 possibility = 1;
@@ -254,6 +267,18 @@ public class Action {
 
     public Long copy(SrcDst src, SrcDst dst, MABRecord mabRecord, Converter conv, Integer toUse) {
         Long startNano = System.nanoTime();
+
+        // if MABfield(toUse) != MABmabfield(src) => toUse = MABConstants.useAlways
+        if (src.getTyp().equals(SrcDst.IS_MABFIELD)) {
+            if (!(toUse.equals(MABConstants.useAlways))) {
+                if (!((src.getMabField().getMabTag() + src.getMabField().getMabIndicator()).equals(mabRecord.getMABTI(toUse)))) {
+                    toUse = MABConstants.useAlways;
+                }
+            }
+        }
+        //
+
+
         if (src.getTyp().equals(SrcDst.IS_MABFIELD) && dst.getTyp().equals((SrcDst.IS_MABFIELD))) {
             if (mabRecord.hasSubFields(src.getMabField().getMabTag(), src.getMabField().getMabIndicator())) {
                 if (src.getMabField().getSubTag().equals(" ")) {

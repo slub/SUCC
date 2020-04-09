@@ -287,14 +287,11 @@ public class succ {
         if (cmdParams.containsKey("convFile")) {
             config.setProperty("converter", cmdParams.get("convFile"));
         }
-        if (cmdParams.containsKey("inFile") && (cmdParams.get("function").equals("mabt2d"))) {
-            config.setProperty("mabTinFile", cmdParams.get("inFile"));
+        if (cmdParams.containsKey("inFile")) {
+            config.setProperty("mabInFile", cmdParams.get("inFile"));
         }
-        if (cmdParams.containsKey("outFile") && (cmdParams.get("function").equals("mabt2d"))) {
-            config.setProperty("mabDoutFile", cmdParams.get("outFile"));
-        }
-        if (cmdParams.containsKey("outFile") && (cmdParams.get("function").equals("mabt2t"))) {
-            config.setProperty("mabToutFile", cmdParams.get("outFile"));
+        if (cmdParams.containsKey("outFile")) {
+            config.setProperty("mabOutFile", cmdParams.get("outFile"));
         }
         if (cmdParams.containsKey("inFile") && (cmdParams.get("function").equals("mabt2dlist"))) {
             config.setProperty("mabInList", cmdParams.get("inFile"));

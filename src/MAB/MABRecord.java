@@ -288,6 +288,15 @@ public class MABRecord {
         }
     }
 
+    public String getMABTI(Integer entryNumber) {
+        for (int i=0; i<mabFields.size(); i++) {
+            if (mabFields.get(i).getEntryNumber().equals(entryNumber)) {
+                return mabFields.get(i).getMabTI();
+            }
+        }
+        return "";
+    }
+
     public String getMabFieldValue(String mabTag, String mabInd) {
         MABField testField = new MABField(mabTag, mabInd);
         for (int i=0; i<mabFields.size(); i++) {
