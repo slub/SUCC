@@ -90,6 +90,7 @@ public class MABFile {
         Integer recordCount = 0;
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+            writeBOM(fileOutputStream);
             for (MABRecord mabRecord : mabFile) {
                 if (mabRecord.getExportListLength() > 0) {
                     mabRecord.doExport();
@@ -111,6 +112,7 @@ public class MABFile {
         Integer recordCount = 0;
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+            writeBOM(fileOutputStream);
             for (MABRecord mabRecord : mabFile) {
                 mabRecord.writeMABTape(fileOutputStream);
                 recordCount++;
@@ -140,4 +142,13 @@ public class MABFile {
 
     public String getMabTyp() { return mabTyp; }
 
+    private void writeBOM(FileOutputStream fileOutputStream) {
+        try {
+            fileOutputStream.write(0xEF);
+            fileOutputStream.write(0xBB);
+            fileOutputStream.write(0xBF);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

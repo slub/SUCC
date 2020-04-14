@@ -150,7 +150,6 @@ public class succ {
                 String mabInFile = config.getProperty("mabInFile", "mabIn.txt");
                 String mabOutFile = config.getProperty("mabOutFile", "mabOut.txt");
                 MABFile mabFile = new MABFile();
-                String mabTyp = config.getProperty("defaultTyp", "t");
                 Boolean seq = Boolean.FALSE;
                 processMABdFile(mabFile, mabInFile, mabOutFile, 1, "d", "d", seq);
                 System.out.println();
@@ -160,7 +159,6 @@ public class succ {
                 String mabInFile = config.getProperty("mabInFile", "mabIn.txt");
                 String mabOutFile = config.getProperty("mabOutFile", "mabOut.txt");
                 MABFile mabFile = new MABFile();
-                String mabTyp = config.getProperty("defaultTyp", "t");
                 Boolean seq = Boolean.FALSE;
                 processMABdFile(mabFile, mabInFile, mabOutFile, 1, "d", "t", seq);
                 System.out.println();
@@ -170,7 +168,6 @@ public class succ {
                 String mabInFile = config.getProperty("mabInFile", "mabIn.txt");
                 String mabOutFile = config.getProperty("mabOutFile", "mabOut.txt");
                 MABFile mabFile = new MABFile();
-                String mabTyp = config.getProperty("defaultTyp", "t");
                 Boolean seq = Boolean.FALSE;
                 processMABtFile(mabFile, mabInFile, mabOutFile, 1, "t", "d", seq);
                 System.out.println();
@@ -180,10 +177,8 @@ public class succ {
                 String mabInFile = config.getProperty("mabInFile", "mabIn.txt");
                 String mabOutFile = config.getProperty("mabOutFile", "mabOut.txt");
                 MABFile mabFile = new MABFile();
-                String mabTyp = config.getProperty("defaultTyp", "t");
                 Boolean seq = Boolean.FALSE;
                 processMABtFile(mabFile, mabInFile, mabOutFile, 1, "t", "t", seq);
-                Integer writtenRecords = mabFile.writeMABTape(mabOutFile);
                 System.out.println();
                 break;
             }
@@ -393,6 +388,8 @@ public class succ {
             try {
                 InputStream inputStream = new FileInputStream(mabTinFile);
                 FileOutputStream fileOutputStream = new FileOutputStream(mabOutFile);
+                writeBOM(fileOutputStream);
+
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                 String str;
                 timeMetrics.startTimer(loadTimeName);
@@ -473,6 +470,7 @@ public class succ {
             try {
                 InputStream inputStream = new FileInputStream(mabDinFile);
                 FileOutputStream fileOutputStream = new FileOutputStream(mabDoutFile);
+                writeBOM(fileOutputStream);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                 String str = "";
                 String mabD = "";
@@ -646,4 +644,13 @@ public class succ {
         config.forEach((key, value) -> System.out.println("#" + key + ": " + value + "#"));
     }
 
+    private static void writeBOM(FileOutputStream fileOutputStream) {
+        try {
+            fileOutputStream.write(0xEF);
+            fileOutputStream.write(0xBB);
+            fileOutputStream.write(0xBF);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
