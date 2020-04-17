@@ -61,6 +61,11 @@ public class MABFile {
         try {
             InputStream inputStream = new FileInputStream(fileName);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+
+            /*
+            TODO: BOM berücksichtigen!!!
+             */
+
             String str;
             while ( (str = bufferedReader.readLine()) != null ) {
                 if ((str.startsWith("###")) && (str.length() > 2)) {
@@ -93,7 +98,7 @@ public class MABFile {
             writeBOM(fileOutputStream);
             for (MABRecord mabRecord : mabFile) {
                 if (mabRecord.getExportListLength() > 0) {
-                    mabRecord.doExport();
+                    mabRecord.doExport("d");
                 }
                 mabRecord.writeMABDisk(fileOutputStream);
                 recordCount++;
@@ -112,8 +117,14 @@ public class MABFile {
         Integer recordCount = 0;
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+/*
+            // MAB tape with BOM?
             writeBOM(fileOutputStream);
+ */
             for (MABRecord mabRecord : mabFile) {
+                if (mabRecord.getExportListLength() > 0) {
+                    mabRecord.doExport("t");
+                }
                 mabRecord.writeMABTape(fileOutputStream);
                 recordCount++;
             }

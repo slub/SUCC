@@ -7,8 +7,10 @@ package MAB;
  * @created 2020-04-07
  */
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.*;
 
 public class MABRecord {
@@ -420,16 +422,45 @@ public class MABRecord {
         exportNames.add(fileName);
     }
 
-    public void doExport() {
-        for (String mabFileName : exportNames) {
-            try {
-                FileOutputStream fileOutputStream = new FileOutputStream(mabFileName,true);
-                writeMABDisk(fileOutputStream);
-                fileOutputStream.close();
-            } catch(FileNotFoundException e){
-                System.out.println("File <" + mabFileName + "> not found!");
-            } catch(Exception e){
-                e.printStackTrace();
+    public void doExport(String fileType) {
+        if (fileType.equals("d")) {
+            for (String mabFileName : exportNames) {
+                try {
+                    File existFile = new File(mabFileName);
+                    if (!(existFile.exists())) {
+                        FileOutputStream fileOutputStream = new FileOutputStream(mabFileName, true);
+                        writeBOM(fileOutputStream);
+                        fileOutputStream.close();
+                    }
+                    FileOutputStream fileOutputStream = new FileOutputStream(mabFileName, true);
+                    writeMABDisk(fileOutputStream);
+                    fileOutputStream.close();
+                } catch (FileNotFoundException e) {
+                    System.out.println("File <" + mabFileName + "> not found!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            for (String mabFileName : exportNames) {
+                try {
+/*
+                    File existFile = new File(mabFileName);
+                    // MAB tape with BOM?
+                    if (!(existFile.exists())) {
+                        FileOutputStream fileOutputStream = new FileOutputStream(mabFileName, true);
+                        writeBOM(fileOutputStream);
+                        fileOutputStream.close();
+                    }
+*/
+                    FileOutputStream fileOutputStream = new FileOutputStream(mabFileName, true);
+                    writeMABTape(fileOutputStream);
+                    fileOutputStream.close();
+                } catch (FileNotFoundException e) {
+                    System.out.println("File <" + mabFileName + "> not found!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -462,6 +493,16 @@ public class MABRecord {
                     }
                 }
             }
+        }
+    }
+
+    private void writeBOM(FileOutputStream fileOutputStream) {
+        try {
+            fileOutputStream.write(0xEF);
+            fileOutputStream.write(0xBB);
+            fileOutputStream.write(0xBF);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
