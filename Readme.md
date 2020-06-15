@@ -39,7 +39,7 @@ Therefore the development of an open source product with similar functions (espe
 - writing file
 - display statistics (counts and timings) 
          
-#### Contributors
+#### contributions
 
 - Ralf Talkenberger (SLUB)
 - Swantje Wiechmann (UBL)
